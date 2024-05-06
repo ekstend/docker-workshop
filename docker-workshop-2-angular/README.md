@@ -1,7 +1,7 @@
 # Multistage build
 
 ## Das wollen wir vermeiden:
-install node ?
+node-installation
 npm install
 npm build
 

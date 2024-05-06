@@ -3,4 +3,4 @@ WORKDIR /app
 COPY . .
 RUN npm ci 
 CMD ["node", "./src/main.js"]
-EXPOSE 80
+EXPOSE 3000
