@@ -1,0 +1,14 @@
+{
+  "name": "node-backend",
+  "version": "1.0.0",
+  "description": "docker build . -t agenda",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
