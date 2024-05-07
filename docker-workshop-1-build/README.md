@@ -1,5 +1,4 @@
 ## Ein Docker-image bauen
-
 docker build . -t agenda
 
 ## Den Container unter Port 80 starten
@@ -16,3 +15,8 @@ docker rm <container id>
 
 ## alle gestoppten container löschen
 docker container prune
+
+## andere Platformen, zB Paspberry PI
+docker buildx create --name mybuilder
+docker buildx use mybuilder
+docker buildx build --platform linux/amd64,linux/arm64/v8 -t mein-image-name .
