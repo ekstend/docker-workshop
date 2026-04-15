@@ -18,7 +18,7 @@ jobs:
           - context: docker-workshop-3-backend
             name: node-backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build ${{ matrix.name }}
         run: docker build ./${{ matrix.context }}
