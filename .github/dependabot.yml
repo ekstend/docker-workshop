@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /docker-workshop-2-angular
+    schedule:
+      interval: monthly
+    groups:
+      angular:
+        patterns: ["@angular/*", "@angular-devkit/*"]
+      all-other:
+        patterns: ["*"]
+        exclude-patterns: ["@angular/*", "@angular-devkit/*"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /docker-workshop-3-backend
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

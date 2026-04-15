@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - context: docker-workshop-1-build
+            name: static-site
+          - context: docker-workshop-2-angular
+            name: angular-app
+          - context: docker-workshop-3-backend
+            name: node-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.name }}
+        run: docker build ./${{ matrix.context }}
