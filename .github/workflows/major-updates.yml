@@ -9,6 +9,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - dir: docker-workshop-2-angular
@@ -26,22 +27,17 @@ jobs:
         id: outdated
         working-directory: ${{ matrix.dir }}
         run: |
-          npm install --ignore-scripts --no-audit --no-fund 2>&1 | tail -5 || true
+          npm install --ignore-scripts --no-audit --no-fund --legacy-peer-deps 2>&1 | tail -3 || true
           OUTDATED=$(npm outdated --json 2>/dev/null || echo "{}")
-          MAJORS=$(echo "$OUTDATED" | jq '[to_entries[] | select(.value.current != null and (.value.current | split(".")[0]) != (.value.latest | split(".")[0])) | {package: .key, current: .value.current, latest: .value.latest}]')
-          COUNT=$(echo "$MAJORS" | jq 'length')
+          MAJORS=$(echo "$OUTDATED" | jq -c '[to_entries[] | select(.value.current != null and (.value.current | split(".")[0]) != (.value.latest | split(".")[0])) | {package: .key, current: .value.current, latest: .value.latest}]')
+          COUNT=$(echo "$MAJORS" | jq -r 'length')
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           if [ "$COUNT" -gt 0 ]; then
-            TABLE="| Package | Current | Latest |"$'\n'"| --- | --- | --- |"
-            while IFS= read -r row; do
-              pkg=$(echo "$row" | jq -r '.package')
-              cur=$(echo "$row" | jq -r '.current')
-              lat=$(echo "$row" | jq -r '.latest')
-              TABLE="$TABLE"$'\n'"| $pkg | $cur | $lat |"
-            done < <(echo "$MAJORS" | jq -c '.[]')
             {
               echo "table<<EOF"
-              echo "$TABLE"
+              echo "| Package | Current | Latest |"
+              echo "| --- | --- | --- |"
+              echo "$MAJORS" | jq -r '.[] | "| \(.package) | \(.current) | \(.latest) |"'
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
           fi
