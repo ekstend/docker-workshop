@@ -16,7 +16,7 @@ app.get('/env', (req, res) => {
     res.setHeader('content-type', 'application/json');
     res.send(json);
 
-    console.log("/env " + json);
+    console.log("/env requested");
 
 })
 
