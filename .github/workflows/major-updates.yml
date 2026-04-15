@@ -26,8 +26,8 @@ jobs:
         id: outdated
         working-directory: ${{ matrix.dir }}
         run: |
-          npm install --ignore-scripts --no-audit > /dev/null 2>&1
-          OUTDATED=$(npm outdated --json 2>/dev/null || true)
+          npm install --ignore-scripts --no-audit --no-fund 2>&1 | tail -5 || true
+          OUTDATED=$(npm outdated --json 2>/dev/null || echo "{}")
           MAJORS=$(echo "$OUTDATED" | jq '[to_entries[] | select(.value.current != null and (.value.current | split(".")[0]) != (.value.latest | split(".")[0])) | {package: .key, current: .value.current, latest: .value.latest}]')
           COUNT=$(echo "$MAJORS" | jq 'length')
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
