@@ -1,0 +1,83 @@
+name: Check major updates
+
+on:
+  schedule:
+    - cron: "0 9 1 * *" # 1st of each month
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dir: docker-workshop-2-angular
+            name: Angular app
+          - dir: docker-workshop-3-backend
+            name: Node backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check outdated packages
+        id: outdated
+        working-directory: ${{ matrix.dir }}
+        run: |
+          npm install --ignore-scripts --no-audit > /dev/null 2>&1
+          OUTDATED=$(npm outdated --json 2>/dev/null || true)
+          MAJORS=$(echo "$OUTDATED" | jq '[to_entries[] | select(.value.current != null and (.value.current | split(".")[0]) != (.value.latest | split(".")[0])) | {package: .key, current: .value.current, latest: .value.latest}]')
+          COUNT=$(echo "$MAJORS" | jq 'length')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -gt 0 ]; then
+            TABLE="| Package | Current | Latest |"$'\n'"| --- | --- | --- |"
+            while IFS= read -r row; do
+              pkg=$(echo "$row" | jq -r '.package')
+              cur=$(echo "$row" | jq -r '.current')
+              lat=$(echo "$row" | jq -r '.latest')
+              TABLE="$TABLE"$'\n'"| $pkg | $cur | $lat |"
+            done < <(echo "$MAJORS" | jq -c '.[]')
+            {
+              echo "table<<EOF"
+              echo "$TABLE"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create or update issue
+        if: steps.outdated.outputs.count > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Major updates available: ${{ matrix.name }}`;
+            const body = `## ${{ matrix.name }} (\`${{ matrix.dir }}\`)\n\n` +
+              `${{ steps.outdated.outputs.count }} major version upgrade(s) available:\n\n` +
+              `${{ steps.outdated.outputs.table }}\n\n` +
+              `_Auto-generated on ${new Date().toISOString().split('T')[0]}_`;
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'major-update',
+            });
+
+            const existing = issues.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['major-update'],
+              });
+            }
