@@ -54,7 +54,7 @@ jobs:
 
       - name: Create or update issue
         if: steps.outdated.outputs.count > 0
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = `Major updates available: ${{ matrix.name }}`;
@@ -90,7 +90,7 @@ jobs:
 
       - name: Close resolved issues
         if: steps.outdated.outputs.count == 0
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = `Major updates available: ${{ matrix.name }}`;
