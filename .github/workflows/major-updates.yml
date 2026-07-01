@@ -21,7 +21,7 @@ jobs:
           - dir: docker-workshop-3-backend
             name: Node backend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
